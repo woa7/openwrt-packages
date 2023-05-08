@@ -5,8 +5,38 @@ START=99
 
 CFGFILE=/var/etc/polipo.conf
 
+USER="proxy"
+USERID="13"
+# LOGFILE="/var/log/polipo"
+config_get 
+
+fix_perms() {
+	config_load 'polipo'
+	local diskCacheRoot
+	config_get "diskCacheRoot" "diskCacheRoot" '"'
+	local localDocumentRoot
+	config_get "localDocumentRoot" "localDocumentRoot" '"'
+	local logFile
+	config_get "logFile" "logFile" '"'
+	
+	user_exists $USER $USERID || user_add $USER $USERID
+	group_exists $USER $USERID || group_add $USER $USERID
+
+	for dir in $diskCacheRoot $localDocumentRoot; do
+		test -e $dir || {
+			mkdir -p $dir
+			chgrp $USER $dir
+			chmod g+w $dir
+		}
+		chgrp $USER $LOGFILE
+		chgrp $USER $CFGFILE
+		chmod g+r $CFGFILE
+	done
+}
+
 start() {
 	config_load 'polipo'
+	fix_perms
 
 	config_get_bool enabled "general" 'enabled' '0'
 	[ $enabled -gt 0 ] || return 1
