@@ -26,6 +26,7 @@ define Package/polipo
   TITLE:=A caching web proxy
   URL:=http://www.pps.univ-paris-diderot.fr/~jch/software/polipo/
   MAINTAINER:=Gabriel Kerneis <gabriel@kerneis.info>
+  USERID:=proxy=13:proxy=13
 endef
 
 define Package/polipo/description
