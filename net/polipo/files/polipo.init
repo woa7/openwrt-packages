@@ -9,7 +9,6 @@ CFGFILE=/var/etc/polipo.conf
 USER="proxy"
 USERID="13"
 # LOGFILE="/var/log/polipo"
-config_get 
 
 fix_perms() {
 	config_load 'polipo'
