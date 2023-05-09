@@ -2,13 +2,14 @@
 # Copyright (C) 2008-2011 OpenWrt.org
 
 START=99
+USE_PROCD=1
 
+NAME=polipo
 PROG=/usr/sbin/polipo
 CFGFILE=/var/etc/polipo.conf
 
 USER="proxy"
 USERID="13"
-# LOGFILE="/var/log/polipo"
 
 fix_perms() {
 	config_load 'polipo'
@@ -37,9 +38,7 @@ fix_perms() {
 	done
 }
 
-start() {
-	fix_perms
-
+start_service() {
 	config_load 'polipo'
 
 	config_get_bool enabled "general" 'enabled' '0'
@@ -59,7 +58,11 @@ start() {
 	polipo_atom "general" "logFile" '"' "1" >> $CFGFILE
 	polipo_atom "general" "localDocumentRoot" '"' "1" >> $CFGFILE
 
-	service_start $PROG -c "$CFGFILE"
+        procd_open_instance
+        procd_set_param command $PROG -c $CFGFILE
+	procd_set_param file $CFGFILE
+	procd_set_param respawn
+        procd_close_instance
 }
 
 stop() {
