@@ -25,9 +25,11 @@ fix_perms() {
 	
 	local dir
 	for dir in "$CacheRoot" "$DocumentRoot"; do
+	if [ "$dir" != "" ]; then 
 		test -e "$dir" || {
 			mkdir -p "$dir"
 		}
+	fi
 	done
 	local var
 	for var in "$CacheRoot" "$DocumentRoot" "$logFile" "$CFGFILE"; do
