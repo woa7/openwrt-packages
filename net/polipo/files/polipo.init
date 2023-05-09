@@ -12,31 +12,35 @@ USERID="13"
 
 fix_perms() {
 	config_load 'polipo'
-	local diskCacheRoot
-	config_get "diskCacheRoot" "diskCacheRoot" '"'
-	local localDocumentRoot
-	config_get "localDocumentRoot" "localDocumentRoot" '"'
+	local CacheRoot
+	config_get CacheRoot cache diskCacheRoot ''
+	local DocumentRoot
+	config_get DocumentRoot general localDocumentRoot ''
 	local logFile
-	config_get "logFile" "logFile" '"'
-	
+	config_get logFile general logFile ''
+
 	user_exists $USER $USERID || user_add $USER $USERID
 	group_exists $USER $USERID || group_add $USER $USERID && group_add_user $USER $USER
-
-	for dir in $diskCacheRoot $localDocumentRoot; do
-		test -e $dir || {
-			mkdir -p $dir
-			chgrp $USER $dir
-			chmod g+w $dir
+	
+	local dir
+	for dir in "$CacheRoot" "$DocumentRoot"; do
+		test -e "$dir" || {
+			mkdir -p "$dir"
 		}
-		chgrp $USER $LOGFILE
-		chgrp $USER $CFGFILE
-		chmod g+r $CFGFILE
+	done
+	local var
+	for var in "$CacheRoot" "$DocumentRoot" "$logFile" "$CFGFILE"; do
+		test -e "$var" || {
+			chown -R $USER:$USER "$var"
+			chmod g+w "$var"
+		}
 	done
 }
 
 start() {
-	config_load 'polipo'
 	fix_perms
+
+	config_load 'polipo'
 
 	config_get_bool enabled "general" 'enabled' '0'
 	[ $enabled -gt 0 ] || return 1
