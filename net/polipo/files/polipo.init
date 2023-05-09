@@ -3,9 +3,43 @@
 
 START=99
 
+PROG=/usr/sbin/polipo
 CFGFILE=/var/etc/polipo.conf
 
+USER="proxy"
+USERID="13"
+# LOGFILE="/var/log/polipo"
+
+fix_perms() {
+	config_load 'polipo'
+	local CacheRoot
+	config_get CacheRoot cache diskCacheRoot ''
+	local DocumentRoot
+	config_get DocumentRoot general localDocumentRoot ''
+	local logFile
+	config_get logFile general logFile ''
+
+	user_exists $USER $USERID || user_add $USER $USERID
+	group_exists $USER $USERID || group_add $USER $USERID && group_add_user $USER $USER
+	
+	local dir
+	for dir in "$CacheRoot" "$DocumentRoot"; do
+		test -e "$dir" || {
+			mkdir -p "$dir"
+		}
+	done
+	local var
+	for var in "$CacheRoot" "$DocumentRoot" "$logFile" "$CFGFILE"; do
+		test -e "$var" || {
+			chown -R $USER:$USER "$var"
+			chmod g+w "$var"
+		}
+	done
+}
+
 start() {
+	fix_perms
+
 	config_load 'polipo'
 
 	config_get_bool enabled "general" 'enabled' '0'
@@ -25,11 +59,11 @@ start() {
 	polipo_atom "general" "logFile" '"' "1" >> $CFGFILE
 	polipo_atom "general" "localDocumentRoot" '"' "1" >> $CFGFILE
 
-	service_start /usr/sbin/polipo -c "$CFGFILE"
+	service_start $PROG -c "$CFGFILE"
 }
 
 stop() {
-	service_stop /usr/sbin/polipo -c "$CFGFILE"
+	service_stop $PROG -c "$CFGFILE"
 }
 
 polipo_config() {
