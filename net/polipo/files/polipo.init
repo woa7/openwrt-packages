@@ -31,7 +31,7 @@ fix_perms() {
 	done
 	local var
 	for var in "$CacheRoot" "$DocumentRoot" "$logFile" "$CFGFILE"; do
-		test -e "$var" || {
+		test -e "$var" && {
 			chown -R $USER:$USER "$var"
 			chmod g+w "$var"
 		}
