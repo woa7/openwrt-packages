@@ -66,6 +66,23 @@ start_service() {
         procd_set_param command $PROG -c $CFGFILE
 	procd_set_param file $CFGFILE
 	procd_set_param respawn
+	procd_set_param stdout 1
+	procd_set_param stderr 1
+	procd_set_param user "$USER"
+	procd_set_param group "$USER"
+	procd_add_jail "$NAME.$section" log
+	local diskCacheRoot
+	config_get diskCacheRoot cache diskCacheRoot ''
+	local localDocumentRoot
+	config_get localDocumentRoot general localDocumentRoot ''
+	local logFile
+	config_get logFile general logFile ''
+	[ -n "$diskCacheRoot" ] && \
+		procd_add_jail_mount_rw "$diskCacheRoot"
+	[ -n "$localDocumentRoot" ] && \
+		procd_add_jail_mount_rw "$localDocumentRoot"
+	[ -n "$logFile" ] && \
+		procd_add_jail_mount_rw "$logFile"
         procd_close_instance
 }
 
